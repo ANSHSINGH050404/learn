@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
-
+import  getAIReply  from "./llm/gemini";
 const app = express();
 
 app.use(cors());
@@ -28,10 +28,16 @@ io.on("connection", (socket) => {
     createdAt: new Date().getTime(),
   });
 
-  socket.on("createMessage", (message) => {
+  socket.on("createMessage", async (message) => {
     console.log("New message:", message);
 
-    io.emit("newMessage", message);
+    const aiReply =await getAIReply(message.text);
+
+    io.emit("newMessage", {
+      from: "AI",
+      text: aiReply,
+      createdAt: new Date().getTime(),
+    });
   });
 
   socket.on("disconnect", () => {
